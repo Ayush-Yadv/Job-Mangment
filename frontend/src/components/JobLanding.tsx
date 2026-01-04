@@ -39,7 +39,7 @@ const mockJobs: Job[] = [
       'Collaborate with cross-functional teams',
       'Present findings to leadership team'
     ],
-    applicationDeadline: '2025-12-31',
+    applicationDeadline: '2026-01-31',
     status: 'published'
   },
   {
@@ -63,7 +63,7 @@ const mockJobs: Job[] = [
       'Collaborate with designers and product managers',
       'Mentor junior developers'
     ],
-    applicationDeadline: '2025-12-15',
+    applicationDeadline: '2026-01-07',
     status: 'published'
   },
   {
@@ -110,7 +110,7 @@ const mockJobs: Job[] = [
       'Identify upsell and expansion opportunities',
       'Gather customer feedback and insights'
     ],
-    applicationDeadline: '2025-12-10',
+    applicationDeadline: '2026-01-05',
     status: 'published'
   }
 ];
