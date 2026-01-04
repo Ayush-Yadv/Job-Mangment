@@ -1,10 +1,11 @@
 import { useState, useCallback, useMemo } from 'react';
-import { LogOut, Briefcase, Users, FileText, Eye, X, LayoutGrid, Table, Star, CheckSquare, Square } from 'lucide-react';
+import { LogOut, Briefcase, Users, FileText, Eye, X, LayoutGrid, Table, Star, CheckSquare, Square, Settings } from 'lucide-react';
 import { KanbanBoard } from './KanbanBoard';
 import { CandidateRating } from './CandidateRating';
 import { CandidateNotes, Note } from './CandidateNotes';
 import { SearchFilters, FilterState, SavedFilter } from './SearchFilters';
 import { BulkActionsBar } from './BulkActionsBar';
+import { JobManagement } from './JobManagement';
 
 interface Rating {
   id: string;
