@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowUpRight, Lock } from 'lucide-react';
+import { ArrowUpRight, Lock, Clock, AlertCircle } from 'lucide-react';
 import { JobDialog } from './JobDialog';
 
 export interface Job {
@@ -13,6 +13,8 @@ export interface Job {
   description: string;
   requirements: string[];
   responsibilities: string[];
+  applicationDeadline?: string;
+  status?: 'draft' | 'published' | 'paused' | 'closed' | 'archived';
 }
 
 const mockJobs: Job[] = [
@@ -36,7 +38,9 @@ const mockJobs: Job[] = [
       'Analyze business metrics and identify opportunities',
       'Collaborate with cross-functional teams',
       'Present findings to leadership team'
-    ]
+    ],
+    applicationDeadline: '2025-12-31',
+    status: 'published'
   },
   {
     id: '2',
@@ -58,7 +62,9 @@ const mockJobs: Job[] = [
       'Write clean, maintainable code',
       'Collaborate with designers and product managers',
       'Mentor junior developers'
-    ]
+    ],
+    applicationDeadline: '2025-12-15',
+    status: 'published'
   },
   {
     id: '3',
@@ -80,7 +86,8 @@ const mockJobs: Job[] = [
       'Create wireframes, prototypes, and high-fidelity designs',
       'Conduct user research and usability testing',
       'Collaborate with engineering and product teams'
-    ]
+    ],
+    status: 'published'
   },
   {
     id: '4',
@@ -102,7 +109,9 @@ const mockJobs: Job[] = [
       'Build and maintain customer relationships',
       'Identify upsell and expansion opportunities',
       'Gather customer feedback and insights'
-    ]
+    ],
+    applicationDeadline: '2025-12-10',
+    status: 'published'
   }
 ];
 
@@ -110,8 +119,49 @@ interface JobLandingProps {
   onAdminClick: () => void;
 }
 
+// Helper functions for deadline display
+const getDaysUntilDeadline = (deadline?: string) => {
+  if (!deadline) return null;
+  const deadlineDate = new Date(deadline);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  deadlineDate.setHours(0, 0, 0, 0);
+  return Math.ceil((deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+const isDeadlineApproaching = (deadline?: string) => {
+  const days = getDaysUntilDeadline(deadline);
+  return days !== null && days >= 0 && days <= 3;
+};
+
+const isLastDay = (deadline?: string) => {
+  const days = getDaysUntilDeadline(deadline);
+  return days === 0;
+};
+
+const isDeadlinePassed = (deadline?: string) => {
+  const days = getDaysUntilDeadline(deadline);
+  return days !== null && days < 0;
+};
+
+const formatDeadline = (deadline?: string) => {
+  if (!deadline) return null;
+  return new Date(deadline).toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric',
+    year: 'numeric'
+  });
+};
+
 export function JobLanding({ onAdminClick }: JobLandingProps) {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+
+  // Only show published jobs that are not past deadline
+  const activeJobs = mockJobs.filter(job => {
+    if (job.status && job.status !== 'published') return false;
+    if (job.applicationDeadline && isDeadlinePassed(job.applicationDeadline)) return false;
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-white">
@@ -140,32 +190,75 @@ export function JobLanding({ onAdminClick }: JobLandingProps) {
 
         {/* Job Listings */}
         <div className="space-y-6">
-          {mockJobs.map((job) => (
-            <div
-              key={job.id}
-              onClick={() => setSelectedJob(job)}
-              className="flex items-center gap-4 py-6 border-b border-gray-200 cursor-pointer hover:bg-gray-50 -mx-6 px-6 transition-colors"
-            >
-              {/* Color Circle */}
+          {activeJobs.map((job) => {
+            const daysUntil = getDaysUntilDeadline(job.applicationDeadline);
+            const approaching = isDeadlineApproaching(job.applicationDeadline);
+            const lastDay = isLastDay(job.applicationDeadline);
+            
+            return (
               <div
-                className="w-10 h-10 rounded-full flex-shrink-0"
-                style={{ backgroundColor: job.color }}
-              />
+                key={job.id}
+                onClick={() => setSelectedJob(job)}
+                className={`flex items-center gap-4 py-6 border-b border-gray-200 cursor-pointer hover:bg-gray-50 -mx-6 px-6 transition-colors ${
+                  approaching ? 'bg-amber-50/50 hover:bg-amber-50' : ''
+                }`}
+                data-testid={`job-card-${job.id}`}
+              >
+                {/* Color Circle */}
+                <div
+                  className="w-10 h-10 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: job.color }}
+                />
 
-              {/* Job Info */}
-              <div className="flex-1">
-                <h3 className="mb-1">{job.title}</h3>
-                <p className="text-gray-600">
-                  {job.type} • {job.salaryMin} - {job.salaryMax} • {job.location}
-                </p>
-              </div>
+                {/* Job Info */}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3>{job.title}</h3>
+                    {lastDay && (
+                      <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        Last day to apply!
+                      </span>
+                    )}
+                    {!lastDay && approaching && (
+                      <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        Closing soon
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-gray-600">
+                    {job.type} • {job.salaryMin} - {job.salaryMax} • {job.location}
+                  </p>
+                  {job.applicationDeadline && (
+                    <p className={`text-sm mt-1 flex items-center gap-1 ${
+                      lastDay ? 'text-red-600 font-medium' : 
+                      approaching ? 'text-amber-600' : 'text-gray-500'
+                    }`}>
+                      <Clock className="w-3 h-3" />
+                      Apply by {formatDeadline(job.applicationDeadline)}
+                      {daysUntil !== null && daysUntil > 0 && daysUntil <= 7 && (
+                        <span className="ml-1">
+                          ({daysUntil} day{daysUntil !== 1 ? 's' : ''} left)
+                        </span>
+                      )}
+                    </p>
+                  )}
+                </div>
 
-              {/* Arrow Icon */}
-              <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center flex-shrink-0">
-                <ArrowUpRight className="w-5 h-5 text-white" />
+                {/* Arrow Icon */}
+                <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center flex-shrink-0">
+                  <ArrowUpRight className="w-5 h-5 text-white" />
+                </div>
               </div>
+            );
+          })}
+          
+          {activeJobs.length === 0 && (
+            <div className="py-12 text-center text-gray-500">
+              No open positions at the moment. Check back soon!
             </div>
-          ))}
+          )}
         </div>
       </div>
 
