@@ -57,6 +57,6 @@
       port: 3000,
       host: '0.0.0.0',
       open: false,
-      allowedHosts: ['af752801-8331-43c2-a772-ec4040db45f4.preview.emergentagent.com', 'localhost', '127.0.0.1'],
+      allowedHosts: true,
     },
   });
