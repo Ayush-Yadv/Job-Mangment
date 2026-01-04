@@ -1286,6 +1286,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </div>
         </div>
       )}
+      </>
+      )}
     </div>
   );
 }
