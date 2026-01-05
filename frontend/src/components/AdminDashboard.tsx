@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
-import { LogOut, Briefcase, Users, FileText, Eye, X, LayoutGrid, Table, Star, CheckSquare, Square, Settings } from 'lucide-react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { LogOut, Briefcase, Users, FileText, Eye, X, LayoutGrid, Table, Star, CheckSquare, Square, Settings, Loader2 } from 'lucide-react';
 import { KanbanBoard } from './KanbanBoard';
 import { CandidateRating } from './CandidateRating';
 import { CandidateNotes, Note } from './CandidateNotes';
