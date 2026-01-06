@@ -342,42 +342,45 @@ export default function AdminJobsPage() {
         </div>
       </header>
 
-      {/* Stats */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl p-5 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Total Jobs</p>
-                <p className="text-2xl font-semibold mt-1">{jobs.length}</p>
+      {/* Jobs Tab Content */}
+      {activeTab === 'jobs' && (
+        <>
+          {/* Stats */}
+          <div className="max-w-7xl mx-auto px-6 py-6">
+            <div className="grid grid-cols-4 gap-4 mb-6">
+              <div className="bg-white rounded-xl p-5 border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-500 text-sm">Total Jobs</p>
+                    <p className="text-2xl font-semibold mt-1">{jobs.length}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <Briefcase className="w-5 h-5 text-indigo-600" />
+                  </div>
+                </div>
               </div>
-              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <Briefcase className="w-5 h-5 text-indigo-600" />
+              <div className="bg-white rounded-xl p-5 border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-500 text-sm">Active Jobs</p>
+                    <p className="text-2xl font-semibold mt-1">{jobs.filter(j => j.status === 'published').length}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Play className="w-5 h-5 text-green-600" />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-5 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Active Jobs</p>
-                <p className="text-2xl font-semibold mt-1">{jobs.filter(j => j.status === 'published').length}</p>
+              <div className="bg-white rounded-xl p-5 border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-500 text-sm">Total Applications</p>
+                    <p className="text-2xl font-semibold mt-1">{jobs.reduce((sum, j) => sum + j.applications_count, 0)}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Users className="w-5 h-5 text-blue-600" />
+                  </div>
+                </div>
               </div>
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <Play className="w-5 h-5 text-green-600" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-5 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Total Applications</p>
-                <p className="text-2xl font-semibold mt-1">{jobs.reduce((sum, j) => sum + j.applications_count, 0)}</p>
-              </div>
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-600" />
-              </div>
-            </div>
-          </div>
           <div className="bg-white rounded-xl p-5 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
