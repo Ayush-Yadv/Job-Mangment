@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCollection } from '@/lib/mongodb';
+import { query, execute } from '@/lib/db';
 
 // Bulk update applications
 export async function POST(request: NextRequest) {
@@ -11,46 +11,44 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No applications specified' }, { status: 400 });
     }
     
-    const collection = await getCollection('applications');
+    // Create placeholders for IN clause
+    const placeholders = applicationIds.map((_, i) => `$${i + 1}`).join(', ');
     
-    let updateResult;
+    let result;
     
     switch (action) {
       case 'move':
         if (!data?.stage) {
           return NextResponse.json({ error: 'Stage is required for move action' }, { status: 400 });
         }
-        updateResult = await collection.updateMany(
-          { id: { $in: applicationIds } },
-          { $set: { stage: data.stage, status: data.status || data.stage } }
+        result = await execute(
+          `UPDATE applications SET stage = $${applicationIds.length + 1}, status = $${applicationIds.length + 1}, stage_changed_at = NOW() WHERE id IN (${placeholders})`,
+          [...applicationIds, data.stage]
         );
         break;
         
       case 'archive':
-        updateResult = await collection.updateMany(
-          { id: { $in: applicationIds } },
-          { $set: { status: 'archived', stage: 'archived' } }
+        result = await execute(
+          `UPDATE applications SET is_archived = true, stage_changed_at = NOW() WHERE id IN (${placeholders})`,
+          applicationIds
         );
         break;
         
       case 'reject':
-        updateResult = await collection.updateMany(
-          { id: { $in: applicationIds } },
-          { $set: { status: 'rejected', stage: 'rejected' } }
+        result = await execute(
+          `UPDATE applications SET status = 'rejected', stage = 'rejected', stage_changed_at = NOW() WHERE id IN (${placeholders})`,
+          applicationIds
         );
         break;
         
       case 'export':
-        // Fetch applications for export
-        const applications = await collection.find({ id: { $in: applicationIds } }).toArray();
-        const exportData = applications.map(app => {
-          const { _id, ...data } = app;
-          return data;
-        });
-        return NextResponse.json({ success: true, data: exportData });
+        const applications = await query(
+          `SELECT a.*, j.title as job_title FROM applications a LEFT JOIN jobs j ON a.job_id = j.id WHERE a.id IN (${placeholders})`,
+          applicationIds
+        );
+        return NextResponse.json({ success: true, data: applications });
         
       case 'email':
-        // In a real app, integrate with email service
         return NextResponse.json({ 
           success: true, 
           message: `Email would be sent to ${applicationIds.length} candidates` 
@@ -62,7 +60,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ 
       success: true, 
-      modifiedCount: updateResult?.modifiedCount || 0 
+      modifiedCount: result || 0 
     });
   } catch (error) {
     console.error('Bulk action error:', error);
