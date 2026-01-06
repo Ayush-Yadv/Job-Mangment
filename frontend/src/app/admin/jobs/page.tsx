@@ -273,21 +273,63 @@ export default function AdminJobsPage() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <Briefcase className="w-6 h-6 text-indigo-600" />
                 <h1 className="text-xl font-semibold">Job Management</h1>
               </div>
+              {/* Main Tabs */}
+              <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setActiveTab('jobs')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === 'jobs' 
+                      ? 'bg-white text-indigo-600 shadow-sm' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  data-testid="jobs-tab"
+                >
+                  <Briefcase className="w-4 h-4 inline-block mr-1.5" />
+                  Jobs
+                </button>
+                <button
+                  onClick={() => setActiveTab('templates')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === 'templates' 
+                      ? 'bg-white text-indigo-600 shadow-sm' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  data-testid="templates-tab"
+                >
+                  <FileText className="w-4 h-4 inline-block mr-1.5" />
+                  Templates
+                  {templates.length > 0 && (
+                    <span className="ml-1.5 px-1.5 py-0.5 bg-gray-200 rounded text-xs">{templates.length}</span>
+                  )}
+                </button>
+              </div>
             </div>
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                data-testid="create-job-btn"
-              >
-                <Plus className="w-4 h-4" />
-                Create Job
-              </button>
+              {activeTab === 'jobs' && (
+                <>
+                  <button
+                    onClick={() => setShowTemplateModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    data-testid="use-template-btn"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Use Template
+                  </button>
+                  <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    data-testid="create-job-btn"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Create Job
+                  </button>
+                </>
+              )}
               <button
                 onClick={() => router.push('/')}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
