@@ -84,16 +84,20 @@ const initialFormData: JobFormData = {
 export default function AdminJobsPage() {
   const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [templates, setTemplates] = useState<JobTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [formData, setFormData] = useState<JobFormData>(initialFormData);
   const [creating, setCreating] = useState(false);
+  const [activeTab, setActiveTab] = useState<'jobs' | 'templates'>('jobs');
 
   useEffect(() => {
     fetchJobs();
+    fetchTemplates();
   }, [statusFilter]);
 
   const fetchJobs = async () => {
@@ -111,6 +115,18 @@ export default function AdminJobsPage() {
       console.error('Error fetching jobs:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await fetch('/api/templates');
+      if (response.ok) {
+        const data = await response.json();
+        setTemplates(data);
+      }
+    } catch (error) {
+      console.error('Error fetching templates:', error);
     }
   };
 
@@ -140,6 +156,68 @@ export default function AdminJobsPage() {
       console.error('Error creating job:', error);
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleSaveAsTemplate = async () => {
+    try {
+      const response = await fetch('/api/templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.title || 'Untitled Template',
+          category: formData.category || 'General',
+          title: formData.title,
+          type: formData.type,
+          location: formData.location,
+          salary_min: formData.salary_min,
+          salary_max: formData.salary_max,
+          description: formData.description,
+          requirements: formData.requirements.split('\n').filter(r => r.trim()),
+          responsibilities: formData.responsibilities.split('\n').filter(r => r.trim()),
+          benefits: formData.benefits.split('\n').filter(r => r.trim()),
+        }),
+      });
+      
+      if (response.ok) {
+        fetchTemplates();
+        alert('Template saved successfully!');
+      }
+    } catch (error) {
+      console.error('Error saving template:', error);
+    }
+  };
+
+  const handleUseTemplate = (template: JobTemplate) => {
+    setFormData({
+      title: template.title,
+      type: template.type,
+      location: template.location,
+      salary_min: template.salary_min,
+      salary_max: template.salary_max,
+      description: template.description,
+      requirements: template.requirements?.join('\n') || '',
+      responsibilities: template.responsibilities?.join('\n') || '',
+      benefits: template.benefits?.join('\n') || '',
+      application_deadline: '',
+      category: template.category,
+      color: '#3B82F6',
+      status: 'draft',
+    });
+    setShowTemplateModal(false);
+    setShowCreateModal(true);
+  };
+
+  const handleDeleteTemplate = async (templateId: string) => {
+    if (!confirm('Are you sure you want to delete this template?')) return;
+    
+    try {
+      const response = await fetch(`/api/templates/${templateId}`, { method: 'DELETE' });
+      if (response.ok) {
+        fetchTemplates();
+      }
+    } catch (error) {
+      console.error('Error deleting template:', error);
     }
   };
 
