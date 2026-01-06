@@ -6,5 +6,6 @@
   "/api/jobs/[id]/route": "app/api/jobs/[id]/route.js",
   "/api/health/route": "app/api/health/route.js",
   "/api/jobs/route": "app/api/jobs/route.js",
+  "/api/applications/[id]/route": "app/api/applications/[id]/route.js",
   "/careers/page": "app/careers/page.js"
 }
