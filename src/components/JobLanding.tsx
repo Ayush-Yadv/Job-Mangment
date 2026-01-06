@@ -200,9 +200,22 @@ export function JobLanding({ onAdminClick }: JobLandingProps) {
             );
           })}
           
-          {activeJobs.length === 0 && (
+          {activeJobs.length === 0 && !error && (
             <div className="py-12 text-center text-gray-500">
               No open positions at the moment. Check back soon!
+            </div>
+          )}
+          
+          {error && (
+            <div className="py-12 text-center">
+              <p className="text-red-500 mb-2">Unable to load positions</p>
+              <p className="text-gray-400 text-sm">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="mt-4 px-4 py-2 bg-gray-100 rounded hover:bg-gray-200"
+              >
+                Retry
+              </button>
             </div>
           )}
         </div>
