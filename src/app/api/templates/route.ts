@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
-import { JobTemplate } from '@/lib/types';
+import { getTemplates, createTemplate, deleteTemplate } from '@/lib/db';
 
 // GET all templates
 export async function GET() {
   try {
-    const templates = await query<JobTemplate>(
-      'SELECT * FROM job_templates ORDER BY created_at DESC'
-    );
-    
+    const templates = await getTemplates();
     return NextResponse.json(templates);
   } catch (error) {
     console.error('Error fetching templates:', error);
@@ -21,31 +17,23 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const sql = `
-      INSERT INTO job_templates (
-        name, category, title, type, salary_min, salary_max,
-        location, description, requirements, responsibilities, benefits
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-      RETURNING *
-    `;
+    const templateData = {
+      name: body.name,
+      category: body.category || 'General',
+      title: body.title,
+      type: body.type || 'full-time',
+      salary_min: body.salary_min || '',
+      salary_max: body.salary_max || '',
+      location: body.location || '',
+      description: body.description || '',
+      requirements: body.requirements || [],
+      responsibilities: body.responsibilities || [],
+      benefits: body.benefits || [],
+    };
     
-    const params = [
-      body.name,
-      body.category || 'General',
-      body.title,
-      body.type || 'full-time',
-      body.salary_min || '',
-      body.salary_max || '',
-      body.location || '',
-      body.description || '',
-      body.requirements || [],
-      body.responsibilities || [],
-      body.benefits || [],
-    ];
+    const template = await createTemplate(templateData);
     
-    const templates = await query<JobTemplate>(sql, params);
-    
-    return NextResponse.json(templates[0], { status: 201 });
+    return NextResponse.json(template, { status: 201 });
   } catch (error) {
     console.error('Error creating template:', error);
     return NextResponse.json({ error: 'Failed to create template' }, { status: 500 });
