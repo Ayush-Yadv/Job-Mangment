@@ -3,174 +3,191 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
 
-// Create Supabase client for production, fall back to local pg for development
-const useSupabase = supabaseUrl && supabaseAnonKey;
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('Supabase credentials not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY.');
+}
 
-export const supabase = useSupabase ? createClient(supabaseUrl, supabaseAnonKey) : null;
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// For backward compatibility with existing code
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  host: process.env.POSTGRES_HOST || 'localhost',
-  port: parseInt(process.env.POSTGRES_PORT || '5432'),
-  database: process.env.POSTGRES_DB || 'postgres',
-  user: process.env.POSTGRES_USER || 'postgres',
-  password: process.env.POSTGRES_PASSWORD,
-  ssl: process.env.POSTGRES_HOST?.includes('supabase.co') ? { rejectUnauthorized: false } : undefined,
-});
-
-export async function query<T>(text: string, params?: unknown[]): Promise<T[]> {
-  // Use Supabase if available
-  if (supabase) {
-    // Parse simple SELECT queries for Supabase
-    const selectMatch = text.match(/SELECT\s+(.+?)\s+FROM\s+(\w+)/i);
-    if (selectMatch) {
-      const table = selectMatch[2];
-      let queryBuilder = supabase.from(table).select('*');
-      
-      // Handle WHERE clauses
-      const whereMatch = text.match(/WHERE\s+(.+?)(?:\s+ORDER|\s*$)/i);
-      if (whereMatch && params && params.length > 0) {
-        const conditions = whereMatch[1];
-        // Parse simple conditions like "column = $1"
-        const conditionParts = conditions.split(/\s+AND\s+/i);
-        let paramIndex = 0;
-        for (const condition of conditionParts) {
-          const eqMatch = condition.match(/(\w+)\s*=\s*\$\d+/);
-          const neqMatch = condition.match(/(\w+)\s*!=\s*'(\w+)'/);
-          if (eqMatch && params[paramIndex] !== undefined) {
-            queryBuilder = queryBuilder.eq(eqMatch[1], params[paramIndex]);
-            paramIndex++;
-          } else if (neqMatch) {
-            queryBuilder = queryBuilder.neq(neqMatch[1], neqMatch[2]);
-          }
-        }
-      }
-      
-      // Handle ORDER BY
-      const orderMatch = text.match(/ORDER\s+BY\s+(\w+)\s+(ASC|DESC)?/i);
-      if (orderMatch) {
-        queryBuilder = queryBuilder.order(orderMatch[1], { ascending: orderMatch[2]?.toUpperCase() !== 'DESC' });
-      }
-      
-      const { data, error } = await queryBuilder;
-      if (error) throw error;
-      return (data || []) as T[];
-    }
-    
-    // Handle INSERT...RETURNING
-    const insertMatch = text.match(/INSERT\s+INTO\s+(\w+)\s*\(([^)]+)\)/i);
-    if (insertMatch && params) {
-      const table = insertMatch[1];
-      const columns = insertMatch[2].split(',').map(c => c.trim());
-      const insertData: Record<string, unknown> = {};
-      columns.forEach((col, i) => {
-        if (params[i] !== undefined) {
-          insertData[col] = params[i];
-        }
-      });
-      
-      const { data, error } = await supabase.from(table).insert(insertData).select().single();
-      if (error) throw error;
-      return [data] as T[];
-    }
-    
-    // Handle UPDATE...RETURNING
-    const updateMatch = text.match(/UPDATE\s+(\w+)\s+SET\s+(.+?)\s+WHERE\s+id\s*=\s*\$(\d+)/i);
-    if (updateMatch && params) {
-      const table = updateMatch[1];
-      const setPart = updateMatch[2];
-      const idParamIndex = parseInt(updateMatch[3]) - 1;
-      const id = params[idParamIndex];
-      
-      const updateData: Record<string, unknown> = {};
-      const setMatches = setPart.matchAll(/(\w+)\s*=\s*\$(\d+)/g);
-      for (const match of setMatches) {
-        const col = match[1];
-        const paramIdx = parseInt(match[2]) - 1;
-        if (params[paramIdx] !== undefined) {
-          updateData[col] = params[paramIdx];
-        }
-      }
-      
-      const { data, error } = await supabase.from(table).update(updateData).eq('id', id).select().single();
-      if (error) throw error;
-      return [data] as T[];
-    }
+// Simplified query functions that use Supabase directly
+export async function getJobs(options?: { status?: string; includeArchived?: boolean }) {
+  let query = supabase.from('jobs').select('*');
+  
+  if (options?.status && options.status !== 'all') {
+    query = query.eq('status', options.status);
   }
   
-  // Fall back to local PostgreSQL
-  const client = await pool.connect();
-  try {
-    const result = await client.query(text, params);
-    return result.rows as T[];
-  } finally {
-    client.release();
-  }
-}
-
-export async function queryOne<T>(text: string, params?: unknown[]): Promise<T | null> {
-  const rows = await query<T>(text, params);
-  return rows[0] || null;
-}
-
-export async function execute(text: string, params?: unknown[]): Promise<number> {
-  if (supabase) {
-    // Handle UPDATE without RETURNING
-    const updateMatch = text.match(/UPDATE\s+(\w+)\s+SET\s+(.+?)\s+WHERE\s+(\w+)\s*=\s*\$(\d+)/i);
-    if (updateMatch && params) {
-      const table = updateMatch[1];
-      const setPart = updateMatch[2];
-      const whereCol = updateMatch[3];
-      const whereParamIdx = parseInt(updateMatch[4]) - 1;
-      const whereValue = params[whereParamIdx];
-      
-      const updateData: Record<string, unknown> = {};
-      
-      // Handle increment operations like "column = column + 1"
-      const incrMatch = setPart.match(/(\w+)\s*=\s*\1\s*\+\s*(\d+)/);
-      if (incrMatch) {
-        // For increment, we need to fetch current value first
-        const { data: current } = await supabase.from(table).select(incrMatch[1]).eq(whereCol, whereValue).single();
-        if (current) {
-          updateData[incrMatch[1]] = (current[incrMatch[1]] || 0) + parseInt(incrMatch[2]);
-        }
-      }
-      
-      // Handle regular SET operations
-      const setMatches = setPart.matchAll(/(\w+)\s*=\s*\$(\d+)/g);
-      for (const match of setMatches) {
-        const col = match[1];
-        const paramIdx = parseInt(match[2]) - 1;
-        if (params[paramIdx] !== undefined) {
-          updateData[col] = params[paramIdx];
-        }
-      }
-      
-      if (Object.keys(updateData).length > 0) {
-        const { error } = await supabase.from(table).update(updateData).eq(whereCol, whereValue);
-        if (error) throw error;
-      }
-      return 1;
-    }
-    
-    // Handle DELETE
-    const deleteMatch = text.match(/DELETE\s+FROM\s+(\w+)\s+WHERE\s+(\w+)\s*=\s*\$1/i);
-    if (deleteMatch && params) {
-      const { error } = await supabase.from(deleteMatch[1]).delete().eq(deleteMatch[2], params[0]);
-      if (error) throw error;
-      return 1;
-    }
+  if (!options?.includeArchived) {
+    query = query.neq('status', 'archived');
   }
   
-  const client = await pool.connect();
-  try {
-    const result = await client.query(text, params);
-    return result.rowCount || 0;
-  } finally {
-    client.release();
-  }
+  query = query.order('created_at', { ascending: false });
+  
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
 }
 
-export { pool };
+export async function getJobById(id: string) {
+  const { data, error } = await supabase
+    .from('jobs')
+    .select('*')
+    .eq('id', id)
+    .single();
+  
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
+}
+
+export async function getJobBySlug(slug: string) {
+  const { data, error } = await supabase
+    .from('jobs')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+  
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
+}
+
+export async function createJob(jobData: Record<string, unknown>) {
+  const { data, error } = await supabase
+    .from('jobs')
+    .insert(jobData)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+}
+
+export async function updateJob(id: string, jobData: Record<string, unknown>) {
+  const { data, error } = await supabase
+    .from('jobs')
+    .update(jobData)
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteJob(id: string) {
+  const { error } = await supabase
+    .from('jobs')
+    .delete()
+    .eq('id', id);
+  
+  if (error) throw error;
+}
+
+export async function getApplications(options?: { jobId?: string; status?: string; stage?: string }) {
+  let query = supabase.from('applications').select(`
+    *,
+    jobs!inner(title, slug)
+  `);
+  
+  if (options?.jobId) {
+    query = query.eq('job_id', options.jobId);
+  }
+  
+  if (options?.status) {
+    query = query.eq('status', options.status);
+  }
+  
+  if (options?.stage) {
+    query = query.eq('stage', options.stage);
+  }
+  
+  query = query.eq('is_archived', false);
+  query = query.order('applied_at', { ascending: false });
+  
+  const { data, error } = await query;
+  if (error) throw error;
+  
+  // Transform to match expected format
+  return (data || []).map((app: Record<string, unknown>) => ({
+    ...app,
+    job_title: (app.jobs as Record<string, unknown>)?.title,
+    job_slug: (app.jobs as Record<string, unknown>)?.slug,
+    jobs: undefined,
+  }));
+}
+
+export async function getApplicationById(id: string) {
+  const { data, error } = await supabase
+    .from('applications')
+    .select('*')
+    .eq('id', id)
+    .single();
+  
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
+}
+
+export async function createApplication(appData: Record<string, unknown>) {
+  const { data, error } = await supabase
+    .from('applications')
+    .insert(appData)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  
+  // Update applications count
+  if (appData.job_id) {
+    await supabase.rpc('increment_applications_count', { job_id: appData.job_id });
+  }
+  
+  return data;
+}
+
+export async function updateApplication(id: string, appData: Record<string, unknown>) {
+  const { data, error } = await supabase
+    .from('applications')
+    .update(appData)
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+}
+
+export async function getTemplates() {
+  const { data, error } = await supabase
+    .from('job_templates')
+    .select('*')
+    .order('created_at', { ascending: false });
+  
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createTemplate(templateData: Record<string, unknown>) {
+  const { data, error } = await supabase
+    .from('job_templates')
+    .insert(templateData)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteTemplate(id: string) {
+  const { error } = await supabase
+    .from('job_templates')
+    .delete()
+    .eq('id', id);
+  
+  if (error) throw error;
+}
+
+// Health check
+export async function checkHealth() {
+  const { error } = await supabase.from('jobs').select('id').limit(1);
+  if (error && error.code !== 'PGRST116') throw error;
+  return true;
+}
