@@ -6,17 +6,22 @@ import { JobDialog } from './JobDialog';
 
 export interface Job {
   id: string;
+  slug: string;
   title: string;
   type: string;
-  salaryMin: string;
-  salaryMax: string;
+  salary_min: string;
+  salary_max: string;
   location: string;
   color: string;
   description: string;
   requirements: string[];
   responsibilities: string[];
-  applicationDeadline?: string;
+  application_deadline?: string;
   status?: 'draft' | 'published' | 'paused' | 'closed' | 'archived';
+  // Legacy field mapping for compatibility
+  salaryMin?: string;
+  salaryMax?: string;
+  applicationDeadline?: string;
 }
 
 interface JobLandingProps {
