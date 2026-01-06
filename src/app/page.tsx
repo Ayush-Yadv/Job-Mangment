@@ -1,27 +1,19 @@
-'use client';
+import { getJobs } from '@/lib/db';
+import HomeClient from './HomeClient';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { JobLanding } from '@/components/JobLanding';
-import { AdminLogin } from '@/components/AdminLogin';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-export default function Home() {
-  const router = useRouter();
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
-
-  const handleAdminLogin = () => {
-    // Redirect to new job-centric admin dashboard
-    router.push('/admin/jobs');
-  };
-
-  if (showAdminLogin) {
-    return (
-      <AdminLogin
-        onClose={() => setShowAdminLogin(false)}
-        onLogin={handleAdminLogin}
-      />
-    );
+export default async function Home() {
+  let jobs = [];
+  let error = null;
+  
+  try {
+    jobs = await getJobs({ status: 'published' });
+  } catch (e) {
+    console.error('Error fetching jobs on server:', e);
+    error = String(e);
   }
-
-  return <JobLanding onAdminClick={() => setShowAdminLogin(true)} />;
+  
+  return <HomeClient initialJobs={jobs} serverError={error} />;
 }
