@@ -81,11 +81,17 @@ const initialFormData: JobFormData = {
   status: 'draft',
 };
 
-export default function AdminJobsPage() {
+interface AdminJobsClientProps {
+  initialJobs: Job[];
+  initialTemplates: JobTemplate[];
+  serverError: string | null;
+}
+
+export default function AdminJobsClient({ initialJobs, initialTemplates, serverError }: AdminJobsClientProps) {
   const router = useRouter();
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [templates, setTemplates] = useState<JobTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [jobs, setJobs] = useState<Job[]>(initialJobs);
+  const [templates, setTemplates] = useState<JobTemplate[]>(initialTemplates);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -94,10 +100,13 @@ export default function AdminJobsPage() {
   const [formData, setFormData] = useState<JobFormData>(initialFormData);
   const [creating, setCreating] = useState(false);
   const [activeTab, setActiveTab] = useState<'jobs' | 'templates'>('jobs');
+  const [error, setError] = useState<string | null>(serverError);
 
+  // Refresh data when filter changes (client-side only after initial load)
   useEffect(() => {
-    fetchJobs();
-    fetchTemplates();
+    if (statusFilter !== 'all') {
+      fetchJobs();
+    }
   }, [statusFilter]);
 
   const fetchJobs = async () => {
