@@ -90,7 +90,7 @@ export function JobDialog({ job, onClose }: JobDialogProps) {
             <div>
               <h2 className="mb-2">{job.title}</h2>
               <p className="text-gray-600">
-                {job.type} • {job.salaryMin} - {job.salaryMax} • {job.location}
+                {job.type} • ${salaryMin} - ${salaryMax} • {job.location}
               </p>
             </div>
           </div>
@@ -103,7 +103,7 @@ export function JobDialog({ job, onClose }: JobDialogProps) {
         </div>
 
         <div className="px-8 py-8">
-          {job.applicationDeadline && (
+          {deadline && (
             <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
               lastDay ? 'bg-red-50 border border-red-200' : 
               approaching ? 'bg-amber-50 border border-amber-200' : 
@@ -127,7 +127,7 @@ export function JobDialog({ job, onClose }: JobDialogProps) {
                   approaching ? 'text-amber-700' : 
                   'text-gray-600'
                 }`}>
-                  Apply by {formatDeadline(job.applicationDeadline)}
+                  Apply by {formatDeadline(deadline)}
                   {daysUntil !== null && daysUntil >= 0 && (
                     <span className="ml-2">
                       ({daysUntil === 0 ? 'Today!' : `${daysUntil} day${daysUntil !== 1 ? 's' : ''} left`})
