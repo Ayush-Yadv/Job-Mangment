@@ -85,7 +85,8 @@ export function JobLanding({ onAdminClick }: JobLandingProps) {
 
   const activeJobs = jobs.filter(job => {
     if (job.status && job.status !== 'published') return false;
-    if (job.applicationDeadline && isDeadlinePassed(job.applicationDeadline)) return false;
+    const deadline = job.application_deadline || job.applicationDeadline;
+    if (deadline && isDeadlinePassed(deadline)) return false;
     return true;
   });
 
