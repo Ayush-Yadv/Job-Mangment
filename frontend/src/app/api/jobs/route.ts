@@ -1,20 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCollection } from '@/lib/mongodb';
-import { Job } from '@/lib/types';
+import { query, queryOne, execute } from '@/lib/db';
+import { Job, generateSlug } from '@/lib/types';
 
 // GET all jobs
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const collection = await getCollection('jobs');
-    const jobs = await collection.find({}).toArray();
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get('status');
+    const includeArchived = searchParams.get('includeArchived') === 'true';
     
-    // Transform MongoDB documents to exclude _id
-    const transformedJobs = jobs.map(job => {
-      const { _id, ...jobData } = job;
-      return jobData;
-    });
+    let sql = 'SELECT * FROM jobs';
+    const params: string[] = [];
+    const conditions: string[] = [];
     
-    return NextResponse.json(transformedJobs);
+    if (status && status !== 'all') {
+      conditions.push(`status = $${params.length + 1}`);
+      params.push(status);
+    }
+    
+    if (!includeArchived) {
+      conditions.push(`status != 'archived'`);
+    }
+    
+    if (conditions.length > 0) {
+      sql += ' WHERE ' + conditions.join(' AND ');
+    }
+    
+    sql += ' ORDER BY created_at DESC';
+    
+    const jobs = await query<Job>(sql, params);
+    
+    return NextResponse.json(jobs);
   } catch (error) {
     console.error('Error fetching jobs:', error);
     return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
@@ -25,36 +41,44 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const collection = await getCollection('jobs');
     
-    const now = new Date().toISOString();
-    const newJob: Omit<Job, '_id'> = {
-      id: `job-${Date.now()}`,
-      title: body.title,
-      type: body.type || 'full-time',
-      salaryMin: body.salaryMin || '',
-      salaryMax: body.salaryMax || '',
-      location: body.location || '',
-      color: body.color || '#3B82F6',
-      description: body.description || '',
-      requirements: body.requirements || [],
-      responsibilities: body.responsibilities || [],
-      benefits: body.benefits || [],
-      status: body.status || 'draft',
-      statusChangedAt: now,
-      applicationDeadline: body.applicationDeadline,
-      createdAt: now,
-      updatedAt: now,
-      applicationsCount: 0,
-      templateId: body.templateId,
-      category: body.category,
-    };
-
-    await collection.insertOne(newJob);
+    // Generate slug from title
+    const tempId = Date.now().toString();
+    const slug = generateSlug(body.title, tempId);
     
-    // Exclude _id from response (MongoDB adds it during insert)
-    const { _id, ...responseJob } = newJob as typeof newJob & { _id?: unknown };
-    return NextResponse.json(responseJob, { status: 201 });
+    const sql = `
+      INSERT INTO jobs (
+        slug, title, type, salary_min, salary_max, location, color,
+        description, requirements, responsibilities, benefits,
+        status, application_deadline, meta_title, meta_description,
+        template_id, category
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+      RETURNING *
+    `;
+    
+    const params = [
+      slug,
+      body.title,
+      body.type || 'full-time',
+      body.salary_min || '',
+      body.salary_max || '',
+      body.location || '',
+      body.color || '#3B82F6',
+      body.description || '',
+      body.requirements || [],
+      body.responsibilities || [],
+      body.benefits || [],
+      body.status || 'draft',
+      body.application_deadline || null,
+      body.meta_title || body.title,
+      body.meta_description || body.description?.substring(0, 160),
+      body.template_id || null,
+      body.category || null,
+    ];
+    
+    const jobs = await query<Job>(sql, params);
+    
+    return NextResponse.json(jobs[0], { status: 201 });
   } catch (error) {
     console.error('Error creating job:', error);
     return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });
