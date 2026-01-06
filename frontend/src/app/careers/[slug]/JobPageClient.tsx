@@ -174,10 +174,16 @@ export default function JobPageClient({ job }: JobPageClientProps) {
                 </div>
               </div>
             </div>
-            {!deadlinePassed && (
-              <button
-                onClick={() => setShowApplicationForm(true)}
-                className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+            <div className="flex items-center gap-3">
+              <ShareButton 
+                title={`${job.title} at Teams 24`}
+                url={`/careers/${job.slug}`}
+                description={job.description?.substring(0, 200)}
+              />
+              {!deadlinePassed && (
+                <button
+                  onClick={() => setShowApplicationForm(true)}
+                  className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
                 data-testid="apply-now-btn"
               >
                 Apply Now
