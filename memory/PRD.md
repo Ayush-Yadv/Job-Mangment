@@ -1,29 +1,29 @@
 # Teams 24 Careers - Product Requirements Document
 
 ## Overview
-A full-stack job board application built with Next.js, TypeScript, and PostgreSQL, allowing companies to manage job postings and track candidate applications through a Kanban-style pipeline.
+A full-stack job board application built with **Next.js** (frontend + API), **TypeScript**, and **PostgreSQL** database. Designed for **Vercel deployment** with **Supabase** for database hosting.
 
 ## Original Problem Statement
-Build a job board with:
-- Public job listings page for candidates
-- Admin dashboard for recruiters
+Build a modern job board with:
+- Public, SEO-optimized job listings
+- Job-centric admin dashboard for recruiters
 - Kanban-style application pipeline
-- Search and filtering capabilities
-- Job management with templates
-- SEO-optimized job pages
+- Social sharing capabilities
+- Fully serverless architecture (Next.js API routes)
 
 ## Tech Stack
 - **Frontend**: Next.js 15 (App Router), React, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes
-- **Database**: PostgreSQL (ready for Supabase migration)
+- **Backend**: Next.js API Routes (no separate backend!)
+- **Database**: PostgreSQL (ready for Supabase)
 - **Icons**: Lucide React
+- **Deployment**: Vercel + Supabase ready
 
-## Architecture
+## Architecture (Vercel-Ready)
 ```
-/app/frontend/
+/app/frontend/                 # Single deployable unit
 ├── src/
 │   ├── app/
-│   │   ├── api/              # Next.js API Routes
+│   │   ├── api/              # Next.js API Routes (serverless)
 │   │   │   ├── jobs/         # CRUD for jobs
 │   │   │   ├── applications/ # CRUD for applications
 │   │   │   ├── templates/    # Job templates
@@ -39,7 +39,8 @@ Build a job board with:
 │   │   │   └── [slug]/       # Individual job page
 │   │   ├── page.tsx          # Landing page
 │   │   └── layout.tsx        # Root layout
-│   ├── components/           # React components
+│   ├── components/
+│   │   └── ShareButton.tsx   # Social sharing component
 │   └── lib/
 │       ├── db.ts             # PostgreSQL connection
 │       └── types.ts          # TypeScript definitions
@@ -47,98 +48,46 @@ Build a job board with:
 
 ## Core Features
 
-### Phase 1: Core Application (✅ COMPLETE)
-- [x] Job Listings Page - Display published jobs with deadlines
-- [x] Admin Login - Mock authentication (admin@jobboard.com / admin123)
-- [x] Kanban Pipeline - Stage management for candidates
-- [x] Candidate Cards - View details, ratings, notes
+### ✅ Phase 1: Core Application (COMPLETE)
+- [x] Job Listings Page
+- [x] Admin Login (mock auth)
+- [x] Kanban Pipeline
+- [x] Candidate Cards
 
-### Phase 2: Job Management (✅ COMPLETE)
-- [x] Job CRUD Operations - Create, edit, publish, pause, close jobs
-- [x] Job Lifecycle - Draft → Published → Paused → Closed → Archived
-- [x] Job Templates - Save and reuse job templates
-- [x] Application Deadlines - Display and track deadlines
+### ✅ Phase 2: Job Management (COMPLETE)
+- [x] Job CRUD Operations
+- [x] Job Lifecycle (Draft → Published → Paused → Closed → Archived)
+- [x] Job Templates
+- [x] Application Deadlines
 
-### Phase 3: Search & Filters (✅ COMPLETE)
-- [x] Global Search - Search by name, email, position
-- [x] Status Filters - Filter jobs by status
-- [x] Saved Filters - Save and load filter presets
-
-### Phase 4: Option A - Architecture (✅ COMPLETE - Jan 6, 2026)
+### ✅ Phase 3: Option A - Architecture (COMPLETE - Jan 6, 2026)
 - [x] **Job-Centric Admin Dashboard** (`/admin/jobs`)
-  - Grid of jobs with stats (applicants, status, deadline)
-  - Filter tabs: All | Published | Draft | Paused | Closed
+  - Stats cards (Total Jobs, Active, Applications, Closing Soon)
+  - Status filter tabs
+  - Create Job modal with full form
   - Quick actions (publish, pause, close)
-  - Click job to view its applications
 - [x] **Per-Job Applications View** (`/admin/jobs/[id]`)
-  - Kanban board scoped to selected job
-  - Toggle between Table and Kanban views
-  - Stage change via dropdown menu
-  - Back navigation to job list
+  - Kanban board scoped to job
+  - Table/Kanban toggle
+  - Stage management
 - [x] **SEO-Optimized Job Pages** (`/careers/[slug]`)
-  - Dedicated URLs for each job
-  - Meta tags (title, description, OpenGraph, Twitter)
-  - JSON-LD structured data (JobPosting schema)
-  - Application form embedded on page
-- [x] **Public Careers Page** (`/careers`)
-  - Lists all published jobs
-  - Category filter tabs
-  - Company footer
+  - Meta tags, OpenGraph, Twitter cards
+  - JSON-LD JobPosting schema
+  - Application form
+- [x] **Social Sharing** (NEW)
+  - Copy link functionality
+  - LinkedIn, Twitter, Facebook, Email share buttons
+  - Native share API support (mobile)
 
-### Phase 5: Database Migration (✅ COMPLETE - Jan 6, 2026)
-- [x] Migrated from MongoDB to PostgreSQL
-- [x] Created proper schema with foreign keys and indexes
-- [x] Added `slug` field for SEO-friendly URLs
+### ✅ Phase 4: Database Migration (COMPLETE)
+- [x] PostgreSQL schema with foreign keys
+- [x] Removed MongoDB dependency
+- [x] Removed separate FastAPI backend
 - [x] Ready for Supabase migration
 
-## Database Schema (PostgreSQL)
-
-### Jobs Table
-```sql
-CREATE TABLE jobs (
-  id UUID PRIMARY KEY,
-  slug VARCHAR(255) UNIQUE NOT NULL,
-  title VARCHAR(255) NOT NULL,
-  type VARCHAR(50),
-  salary_min VARCHAR(50),
-  salary_max VARCHAR(50),
-  location VARCHAR(255),
-  color VARCHAR(20),
-  description TEXT,
-  requirements TEXT[],
-  responsibilities TEXT[],
-  benefits TEXT[],
-  status VARCHAR(50), -- draft, published, paused, closed, archived
-  application_deadline DATE,
-  meta_title VARCHAR(255),
-  meta_description TEXT,
-  category VARCHAR(100),
-  applications_count INTEGER,
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP
-);
-```
-
-### Applications Table
-```sql
-CREATE TABLE applications (
-  id UUID PRIMARY KEY,
-  job_id UUID REFERENCES jobs(id),
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) NOT NULL,
-  phone VARCHAR(50),
-  position VARCHAR(255),
-  resume_url TEXT,
-  linkedin VARCHAR(255),
-  portfolio VARCHAR(255),
-  cover_letter TEXT,
-  experience VARCHAR(100),
-  status VARCHAR(50),
-  stage VARCHAR(50),
-  rating DECIMAL(3,2),
-  applied_at TIMESTAMP
-);
-```
+## Demo Jobs Created
+1. **AI/ML Engineer** - Remote/San Francisco, $180k-$300k
+2. **Head of Marketing** - New York City, $200k-$350k
 
 ## API Endpoints
 
@@ -146,7 +95,6 @@ CREATE TABLE applications (
 |--------|----------|-------------|
 | GET | /api/health | Health check |
 | GET | /api/jobs | List all jobs |
-| GET | /api/jobs?status=published | Filter by status |
 | POST | /api/jobs | Create job |
 | GET | /api/jobs/:id | Get job by ID or slug |
 | PUT | /api/jobs/:id | Update job |
@@ -160,48 +108,63 @@ CREATE TABLE applications (
 ## Credentials
 - Admin Email: `admin@jobboard.com`
 - Admin Password: `admin123`
-- PostgreSQL: `postgres:postgres123@localhost:5432/teams24careers`
 
-## Running the Application
+## Deployment Guide
+
+### Vercel Deployment
 ```bash
-cd /app/frontend
-yarn dev
-# App: http://localhost:3000
-# Admin: http://localhost:3000/admin/jobs
-# Careers: http://localhost:3000/careers
+# 1. Push to GitHub
+# 2. Connect to Vercel
+# 3. Set environment variables:
+#    - POSTGRES_HOST=your-supabase-host.supabase.co
+#    - POSTGRES_PORT=5432
+#    - POSTGRES_DB=postgres
+#    - POSTGRES_USER=postgres
+#    - POSTGRES_PASSWORD=your-password
+# 4. Deploy!
 ```
+
+### Supabase Setup
+1. Create a new Supabase project
+2. Run the schema SQL (see database section)
+3. Copy the connection string
+4. Add to Vercel environment variables
 
 ## Next Steps / Backlog
 
-### P0 - Critical (Ready for Supabase)
-- [ ] Migrate PostgreSQL to Supabase cloud database
-- [ ] Add real authentication (Supabase Auth)
+### P0 - Ready for Production
+- [ ] Connect to Supabase (replace local PostgreSQL)
+- [ ] Add Supabase Auth (replace mock auth)
+- [ ] Configure Vercel deployment
 
 ### P1 - High Priority
-- [ ] Email Notification System - Auto emails for status changes
-- [ ] Interview Scheduling - Calendar integration
-- [ ] Drag-and-drop Kanban - Enable drag between stages
+- [ ] Drag-and-drop Kanban
+- [ ] Email notifications (Resend/SendGrid)
+- [ ] Interview scheduling
 
 ### P2 - Medium Priority
-- [ ] Email Templates - Customizable email templates
-- [ ] Analytics Dashboard - Hiring metrics and insights
-- [ ] Resume File Upload - Store resumes in cloud storage
+- [ ] Analytics dashboard
+- [ ] Email templates
+- [ ] Resume file upload (Supabase Storage)
 
 ### P3 - Low Priority
-- [ ] LinkedIn Auto-Import - Parse LinkedIn profiles
-- [ ] Resume Parsing - AI-powered resume analysis
-- [ ] Multi-tenant Support - Multiple companies/teams
+- [ ] LinkedIn auto-import
+- [ ] AI resume parsing
+- [ ] Multi-tenant support
 
 ## Changelog
 
 ### January 6, 2026
-- **PostgreSQL Migration**: Migrated from MongoDB to PostgreSQL
-- **Job-Centric Admin Dashboard**: Admin navigates by jobs first (`/admin/jobs`)
-- **Per-Job Applications View**: Kanban/Table for specific job (`/admin/jobs/[id]`)
-- **SEO Job Pages**: `/careers` listing and `/careers/[slug]` with meta tags, JSON-LD
-- **Database Schema**: Added slug field, proper indexes, foreign keys
+- ✅ Fixed Create Job CTA - added full modal with form
+- ✅ Created 2 demo jobs (AI/ML Engineer, Head of Marketing)
+- ✅ Added Share feature with LinkedIn, Twitter, Facebook, Email + Copy Link
+- ✅ Removed separate backend - fully Next.js now
+- ✅ Verified Vercel + Supabase deployment readiness
+
+### January 6, 2026 (Earlier)
+- ✅ PostgreSQL migration from MongoDB
+- ✅ Job-Centric Admin Dashboard
+- ✅ SEO-optimized job pages with JSON-LD
 
 ### January 5, 2026
-- **Next.js Migration**: Migrated from React/Vite to Next.js with TypeScript
-- **API Routes**: Created Next.js API routes replacing FastAPI backend
-- Initial MongoDB integration (later replaced with PostgreSQL)
+- ✅ Next.js migration from React/Vite
