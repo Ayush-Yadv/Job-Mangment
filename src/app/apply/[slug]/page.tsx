@@ -1,5 +1,5 @@
 import { getJobBySlug } from '@/lib/db';
-import { ApplicationForm } from '@/components/ApplicationForm';
+import { ApplyClient } from './ApplyClient';
 import Link from 'next/link';
 
 export default async function ApplyPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -29,11 +29,11 @@ export default async function ApplyPage({ params }: { params: Promise<{ slug: st
     salary_min: job.salary_min || job.salaryMin,
     salary_max: job.salary_max || job.salaryMax,
     application_deadline: job.application_deadline || job.applicationDeadline,
-  };
+  } as any;
 
   return (
     <div className="min-h-screen bg-[#fafafa]">
-      <ApplicationForm job={formattedJob} isStandalone={true} />
+      <ApplyClient job={formattedJob} />
     </div>
   );
 }

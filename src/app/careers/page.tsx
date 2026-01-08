@@ -82,7 +82,7 @@ export default function CareersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-[#fafafa] relative overflow-hidden">
       {/* Hero Section */}
       <div className="bg-black text-white relative overflow-hidden py-32">
         <div className="absolute inset-0 opacity-20">
@@ -236,41 +236,31 @@ export default function CareersPage() {
         )}
       </div>
 
-      {/* Company Footer */}
-      <footer className="bg-gray-900 text-white mt-20">
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-4 gap-8">
-            <div className="col-span-2">
-              <h3 className="text-2xl font-bold mb-4">Teams 24</h3>
-              <p className="text-gray-400 max-w-md">
-                Building innovative solutions that transform how teams work together. 
-                Join us in shaping the future of collaboration.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="/careers" className="hover:text-white transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Connect</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">LinkedIn</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Twitter</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">GitHub</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Instagram</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
-            © 2026 Teams 24. All rights reserved.
-          </div>
+      {/* Results Count & Watermark */}
+      <div className="max-w-6xl mx-auto px-6 pb-32">
+        <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">
+          Showing {filteredJobs.length} results
+        </p>
+      </div>
+
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-screen max-w-[90rem] overflow-hidden pointer-events-none">
+        <div className="w-full h-[7.5rem] sm:h-[9.375rem] md:h-[12.5rem] lg:h-[15.625rem] xl:h-[21.875rem] flex items-end justify-center select-none opacity-10">
+          <p
+            className="font-normal text-center whitespace-nowrap w-full px-4"
+            style={{
+              fontFamily: "Dyson Sans Modern",
+              fontWeight: 400,
+              fontSize: "clamp(5rem, 25vw, 25rem)",
+              lineHeight: "0.6",
+              color: "#131313",
+              transform: "translateY(15%)",
+              minWidth: "max-content",
+            }}
+          >
+            Teams24
+          </p>
         </div>
-      </footer>
+      </div>
 
       {selectedJob && (
         <JobDialog job={selectedJob} onClose={() => setSelectedJob(null)} />
