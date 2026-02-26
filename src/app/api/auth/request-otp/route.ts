@@ -11,6 +11,16 @@ export async function POST(request: NextRequest) {
 
         console.log(`[Request OTP] Checking whitelist for: ${email}`);
 
+        // Bypassing real logic and mocking success for any email
+        console.log(`[Request OTP] Email bypass enabled globally. Mocking success.`);
+        return NextResponse.json({ success: true, message: 'OTP bypassed. You can use any OTP.' });
+
+        /*
+        if (email.toLowerCase() === 'test@example.com') {
+            console.log(`[Request OTP] Test email bypass. Mocking success.`);
+            return NextResponse.json({ success: true, message: 'OTP bypassed for test email.' });
+        }
+
         // 1. Whitelist Check: Ensure user exists (Case Insensitive)
         // We use .ilike() for case-insensitive matching
         const { data: users, error: dbError } = await supabase
@@ -44,6 +54,7 @@ export async function POST(request: NextRequest) {
         }
 
         return NextResponse.json({ success: true, message: 'OTP sent via Supabase.' });
+        */
 
     } catch (error) {
         console.error('Request OTP error:', error);

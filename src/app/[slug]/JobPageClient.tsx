@@ -299,7 +299,7 @@ export default function JobPageClient({ job }: JobPageClientProps) {
               minWidth: "max-content",
             }}
           >
-            Teams24
+            Jobs Management App
           </p>
         </div>
       </div>

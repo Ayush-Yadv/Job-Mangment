@@ -44,6 +44,24 @@ export async function POST(request: NextRequest) {
 
     const application = await createApplication(appData);
 
+    // Send notification emails (asynchronously)
+    if (application) {
+      const { sendCandidateConfirmation, sendAdminNotification } = await import('@/lib/email');
+
+      // We don't await these to keep the response fast
+      sendCandidateConfirmation({
+        candidateName: appData.name,
+        candidateEmail: appData.email,
+        jobTitle: appData.position
+      }).catch(err => console.error('Failed to send candidate email:', err));
+
+      sendAdminNotification({
+        candidateName: appData.name,
+        candidateEmail: appData.email,
+        jobTitle: appData.position
+      }).catch(err => console.error('Failed to send admin email:', err));
+    }
+
     return NextResponse.json(application, { status: 201 });
   } catch (error) {
     console.error('Error creating application:', error);

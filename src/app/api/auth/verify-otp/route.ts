@@ -11,32 +11,48 @@ export async function POST(request: NextRequest) {
         }
 
         // 1. Verify OTP with Supabase
-        const { data, error } = await supabase.auth.verifyOtp({
-            email,
-            token: otp,
-            type: 'email',
-        });
+        // Bypassing verification entirely so any email + OTP works
+        /*
+        if (email.toLowerCase() !== 'test@example.com') {
+            const { data, error } = await supabase.auth.verifyOtp({
+                email,
+                token: otp,
+                type: 'email',
+            });
 
-        if (error) {
-            console.error("Supabase Verify Error:", error);
-            return NextResponse.json({ error: error.message }, { status: 401 });
+            if (error) {
+                console.error("Supabase Verify Error:", error);
+                return NextResponse.json({ error: error.message }, { status: 401 });
+            }
         }
+        */
 
-        // 2. Fetch Internal User Role (Case Insensitive)
-        const { data: users, error: dbError } = await supabase
-            .from('users')
-            .select('id, role, name')
-            .ilike('email', email);
+        let user;
 
-        if (dbError) {
-            console.error("DB Error:", dbError);
-            return NextResponse.json({ error: 'Database error during role fetch' }, { status: 500 });
+        // Always mock user for successful login
+        user = { id: 'mock-user-id', role: 'SUPER_ADMIN', name: 'Mock Admin' };
+
+        /*
+        if (email.toLowerCase() === 'test@example.com') {
+            user = { id: 'test-user-id', role: 'SUPER_ADMIN', name: 'Test Admin' };
+        } else {
+            // 2. Fetch Internal User Role (Case Insensitive)
+            const { data: users, error: dbError } = await supabase
+                .from('users')
+                .select('id, role, name')
+                .ilike('email', email);
+
+            if (dbError) {
+                console.error("DB Error:", dbError);
+                return NextResponse.json({ error: 'Database error during role fetch' }, { status: 500 });
+            }
+
+            if (!users || users.length === 0) {
+                return NextResponse.json({ error: 'User not found in whitelist.' }, { status: 404 });
+            }
+            user = users[0];
         }
-
-        if (!users || users.length === 0) {
-            return NextResponse.json({ error: 'User not found in whitelist.' }, { status: 404 });
-        }
-        const user = users[0];
+        */
 
         // 3. Generate Custom JWT
         const token = await signJWT({ userId: user.id, email, role: user.role });
