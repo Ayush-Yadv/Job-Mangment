@@ -94,10 +94,10 @@ export default function Home() {
           <div className="flex items-center gap-3 mb-6 md:mb-8">
             <img 
               src="/logo copy.png" 
-              alt="Teams24 Logo" 
+              alt="Jobs Management App Logo" 
               className="w-8 h-8 md:w-10 md:h-10 object-contain"
             />
-            <span className="text-xl md:text-2xl font-black text-white tracking-tight">Teams24</span>
+            <span className="text-xl md:text-2xl font-black text-white tracking-tight">Jobs Management App</span>
           </div>
           <div className="max-w-3xl">
             <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tight leading-tight">
@@ -254,7 +254,7 @@ export default function Home() {
               minWidth: "max-content",
             }}
           >
-            Teams24
+            Jobs Management App
           </p>
         </div>
       </div>
