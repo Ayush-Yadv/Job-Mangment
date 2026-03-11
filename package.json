@@ -1,5 +1,5 @@
 {
-  "name": "teams24-careers",
+  "name": "jobs-management-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -12,11 +12,13 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.89.0",
     "@types/pg": "^8.16.0",
+    "jose": "^6.1.3",
     "lucide-react": "^0.454.0",
     "next": "14.2.5",
     "pg": "^8.16.3",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "resend": "^6.9.1"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",

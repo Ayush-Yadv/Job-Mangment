@@ -84,38 +84,44 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#fafafa] relative overflow-hidden">
       {/* Hero Section */}
-      <div className="bg-black text-white relative overflow-hidden py-8 md:py-10 min-h-[20vh] md:min-h-[25vh] flex items-center">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 -left-1/4 w-1/2 h-full bg-indigo-500 rounded-full blur-[120px]" />
-          <div className="bottom-0 -right-1/4 w-1/2 h-full bg-purple-500 rounded-full blur-[120px]" />
-        </div>
+      <div 
+        className="bg-black/60 text-white relative overflow-hidden py-8 md:py-10 min-h-[40vh] md:min-h-[50vh] flex items-center"
+        style={{
+          backgroundImage: 'url("/background.png")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-black/40" />
+
+
         
         <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10 w-full">
           <div className="flex items-center gap-3 mb-6 md:mb-8">
             <img 
               src="/logo copy.png" 
-              alt="Teams24 Logo" 
+              alt="Teams24 career page Logo" 
               className="w-8 h-8 md:w-10 md:h-10 object-contain"
             />
-            <span className="text-xl md:text-2xl font-black text-white tracking-tight">Teams24</span>
+            <span className="text-xl md:text-2xl font-black text-white tracking-tight">Teams24 career page</span>
           </div>
           <div className="max-w-3xl">
             <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tight leading-tight">
-              Build the next generation <span className="text-gray-500">of software.</span>
+              Build the next generation <span className="text-white">of software.</span>
             </h1>
-            <p className="text-base text-gray-400 font-medium leading-relaxed mb-6">
+            <p className="text-base text-white font-medium leading-relaxed mb-6">
               We&apos;re a team of designers, engineers, and visionaries working together 
               to transform how teams collaborate and build the future. Join us.
             </p>
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex flex-col">
                 <span className="text-2xl font-black text-white">{jobs.length}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 mt-1">Open Roles</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white mt-1">Open Roles</span>
               </div>
               <div className="w-px h-8 bg-gray-800" />
               <div className="flex flex-col">
                 <span className="text-2xl font-black text-white">100%</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 mt-1">Remote-first</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white mt-1">Remote-first</span>
               </div>
             </div>
           </div>
@@ -245,7 +251,6 @@ export default function Home() {
           <p
             className="font-normal text-center whitespace-nowrap w-full px-4"
             style={{
-              fontFamily: "Dyson Sans Modern",
               fontWeight: 400,
               fontSize: "clamp(5rem, 25vw, 25rem)",
               lineHeight: "0.6",

@@ -1,15 +1,15 @@
-import { getJobs, getTemplates } from '@/lib/db';
-import AdminJobsClient from './AdminJobsClient';
+import { getApplications, getJobs } from '@/lib/db';
+import CandidatesClient from './CandidatesClient';
 import { cookies } from 'next/headers';
 import { verifyJWT } from '@/lib/jwt';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default async function AdminJobsPage() {
-  let jobs = [];
-  let templates = [];
-  let serverError = null;
+export default async function AdminCandidatesPage() {
+  let applications: any[] = [];
+  let jobs: any[] = [];
+  let serverError: string | null = null;
   let userRole = '';
 
   try {
@@ -23,19 +23,19 @@ export default async function AdminJobsPage() {
        }
     }
 
-    [jobs, templates] = await Promise.all([
-      getJobs({ includeArchived: true }),
-      getTemplates()
+    [applications, jobs] = await Promise.all([
+      getApplications({ jobId: 'all' }),
+      getJobs({ includeArchived: true })
     ]);
   } catch (e) {
-    console.error('Error fetching admin data:', e);
+    console.error('Error fetching candidates data:', e);
     serverError = String(e);
   }
   
   return (
-    <AdminJobsClient 
-      initialJobs={jobs} 
-      initialTemplates={templates}
+    <CandidatesClient 
+      initialApplications={applications} 
+      jobs={jobs}
       serverError={serverError}
       userRole={userRole} 
     />

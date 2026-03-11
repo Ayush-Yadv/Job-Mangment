@@ -80,8 +80,8 @@ function generateJobPostingLD(job: Job) {
     hiringOrganization: {
       '@type': 'Organization',
       name: 'Teams 24',
-      sameAs: 'https://teams24.com',
-      logo: 'https://teams24.com/logo.png',
+      sameAs: 'https://jobsmanagement.app',
+      logo: 'https://jobsmanagement.app/logo.png',
     },
     jobLocation: {
       '@type': 'Place',
