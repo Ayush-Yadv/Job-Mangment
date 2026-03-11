@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import { Manrope } from 'next/font/google';
+import { Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import Script from 'next/script';
 
-const manrope = Manrope({ subsets: ['latin'] });
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Careers at Teams 24 | Open Positions',
@@ -31,7 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={manrope.className}>
+      <body className={spaceGrotesk.className}>
         {children}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-W5600BXJZT"
